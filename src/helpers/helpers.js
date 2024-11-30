@@ -1,6 +1,5 @@
 import { Authenticate } from "../authentication/auth";
 import { getDataset, updateDataset } from "../kv/handlers";
-import { renderErrorPage } from "../pages/error";
 import { renderHomePage } from "../pages/home";
 import { initializeParams, origin } from "./init";
 
@@ -51,8 +50,7 @@ export async function handlePanel(request, env) {
         return new Response('Success', { status: 200 });
     }
         
-    const { kvNotFound, proxySettings } = await getDataset(request, env);
-    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
+    const { proxySettings } = await getDataset(request, env);
     const pwd = await env.bpb.get('pwd');
     if (pwd && !auth) return Response.redirect(`${origin}/login`, 302);
     const isPassSet = pwd?.length >= 8;
@@ -60,6 +58,7 @@ export async function handlePanel(request, env) {
 }
 
 export async function fallback(request) {
+    return new Response('Not found', { status: 404 });
     const url = new URL(request.url);
     url.hostname = 'www.speedtest.net';
     url.protocol = 'https:';
